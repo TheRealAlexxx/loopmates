@@ -11,6 +11,8 @@ on its button on that tick. You can't hold a door for yourself.
 
 Reach `E` in as few loops as you can. Par is the true minimum.
 
+Open https://therealalexxx.github.io/loopmates/#daily for the level of the day. It is the same level for everyone on a given UTC date, and finishing it offers a copy-able result line.
+
 Keys: arrows or WASD to move, space to wait, enter to send the current loop as
 a ghost, backspace to undo a tick, r to restart.
 
@@ -32,7 +34,7 @@ Two details keep it small:
 ## Tests
 
 ```
-node --test test.js
+node --test test.js test-daily.js
 ```
 
 The suite cross-checks the solver against a brute force over every move string
