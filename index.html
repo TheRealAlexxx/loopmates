@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>loopmates - co-op with your past selves</title>
+<meta name="description" content="A turn-based puzzle where every earlier loop replays as a ghost. Stand on buttons for yourself. Par is the provable minimum number of loops.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>loopmates</h1>
+    <p class="tagline">co-op with your past selves</p>
+  </header>
+
+  <section id="hud">
+    <span id="lvl-name"></span>
+    <span id="loop-info"></span>
+    <span id="tick-info"></span>
+  </section>
+
+  <div id="board" role="img" aria-label="puzzle grid"></div>
+  <div id="timebar"><div id="timefill"></div></div>
+  <p id="msg"></p>
+
+  <div id="pad">
+    <button data-k="U" aria-label="up">&uarr;</button>
+    <button data-k="L" aria-label="left">&larr;</button>
+    <button data-k="W" aria-label="wait">wait</button>
+    <button data-k="R" aria-label="right">&rarr;</button>
+    <button data-k="D" aria-label="down">&darr;</button>
+  </div>
+
+  <div class="row">
+    <button id="undo" class="secondary">undo (backspace)</button>
+    <button id="send" class="secondary">send ghost (enter)</button>
+    <button id="reset" class="secondary">restart level (r)</button>
+  </div>
+
+  <details id="rules">
+    <summary>how to play</summary>
+    <p>You get a fixed number of ticks per loop. Arrow keys or WASD move you one tile per tick, space waits.
+    When a loop ends (time runs out, or you press enter) it replays as a <b>ghost</b> from the start, at the same time as your next loop.</p>
+    <p>A lowercase tile is a <b>button</b>. The matching capital tile is a <b>door</b>. A door is open on a tick when a ghost is standing on its button on that tick.
+    You cannot hold a door for yourself, you need a past loop to do it.</p>
+    <p>Reach <b>E</b> before time runs out. Fewer loops is better. Par is the true minimum, found by an exhaustive solver.</p>
+  </details>
+
+  <h2>levels</h2>
+  <div id="levels"></div>
+  <footer><a href="https://github.com/TheRealAlexxx/loopmates">source</a> - MIT</footer>
+</main>
+<script src="sim.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
