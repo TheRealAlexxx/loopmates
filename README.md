@@ -13,6 +13,8 @@ Reach `E` in as few loops as you can. Par is the true minimum.
 
 Open https://therealalexxx.github.io/loopmates/#daily for the level of the day. It is the same level for everyone on a given UTC date, and finishing it offers a copy-able result line.
 
+Build your own at https://therealalexxx.github.io/loopmates/editor.html. It solves the level as you paint and gives you a link (`#c=...`) anyone can play. Custom levels are encoded in the URL, nothing is stored on a server.
+
 Keys: arrows or WASD to move, space to wait, enter to send the current loop as
 a ghost, backspace to undo a tick, r to restart.
 
@@ -34,7 +36,7 @@ Two details keep it small:
 ## Tests
 
 ```
-node --test test.js test-daily.js
+node --test test.js test-daily.js test-share.js
 ```
 
 The suite cross-checks the solver against a brute force over every move string
