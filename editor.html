@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>loopmates level editor</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  #palette { display:flex; flex-wrap:wrap; gap:6px; margin:.8rem 0; }
+  #palette button { background:var(--panel); color:var(--text); border:1px solid var(--border); min-width:42px; }
+  #palette button.on { border-color:var(--acc); color:var(--acc); }
+  .ctl { display:flex; gap:.8rem; flex-wrap:wrap; align-items:center; color:var(--dim); font-size:.9rem; }
+  .ctl input { width:3.4rem; font:inherit; background:var(--panel); color:var(--text); border:1px solid var(--border); border-radius:4px; padding:.2rem; }
+  #status { min-height:3rem; margin:.8rem 0; }
+  #status.ok { color:var(--good); } #status.err { color:var(--warn); }
+  #board .c { cursor:pointer; user-select:none; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>editor</h1>
+    <p class="tagline">build a loopmates level, get its true par</p>
+  </header>
+  <div class="ctl">
+    <label>width <input id="w" type="number" min="3" max="12" value="7"></label>
+    <label>height <input id="h" type="number" min="3" max="12" value="5"></label>
+    <label>ticks <input id="T" type="number" min="1" max="24" value="10"></label>
+  </div>
+  <div id="palette"></div>
+  <div id="board"></div>
+  <p id="status"></p>
+  <div class="row">
+    <a id="play" href="#"><button class="secondary" type="button">play it</button></a>
+    <button id="copy" class="secondary" type="button">copy link</button>
+    <button id="clear" class="secondary" type="button">clear</button>
+  </div>
+  <footer><a href="index.html">back to the game</a></footer>
+</main>
+<script src="sim.js"></script>
+<script src="share.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>
