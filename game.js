@@ -11,12 +11,13 @@
   let ghosts = [];   // recorded move strings
   let tracks = [];   // their position tracks
   let moves = '';    // current loop
-  let curPos = null, won = false;
+  let curPos = null, won = false, daily = false;
 
   fetch('levels.json').then(r => r.json()).then(data => {
     levels = data;
-    const h = parseInt(location.hash.slice(1), 10);
     const saved = store.get();
+    const h = location.hash === '#daily' ? Daily.dailyIndex(new Date(), levels.length) + 1 : parseInt(location.hash.slice(1), 10);
+    daily = location.hash === '#daily';
     idx = h > 0 && h <= levels.length ? h - 1 : Math.min(saved.cur || 0, levels.length - 1);
     buildLevelList();
     load(idx);
@@ -28,9 +29,10 @@
     ghosts = []; tracks = []; moves = ''; won = false;
     curPos = L.start.slice();
     const s = store.get(); s.cur = i; store.set(s);
-    history.replaceState(null, '', '#' + (i + 1));
+    history.replaceState(null, '', daily ? '#daily' : '#' + (i + 1));
     buildBoard();
     say('');
+    $('share').hidden = true;
     render();
     refreshLevelList();
   }
@@ -139,8 +141,9 @@
     store.set(s);
     let text = 'Out in ' + loops + (loops === 1 ? ' loop. ' : ' loops. ');
     text += loops <= par ? 'Par.' : (loops - par) + ' over par (' + par + ').';
-    if (idx + 1 < levels.length) text += ' Next level: press enter.';
+    if (!daily && idx + 1 < levels.length) text += ' Next level: press enter.';
     say(text, 'win');
+    $('share').hidden = !daily;
     render();
     refreshLevelList();
   }
@@ -159,7 +162,7 @@
     levels.forEach((lv, i) => {
       const b = document.createElement('button');
       b.textContent = i + 1;
-      b.addEventListener('click', () => load(i));
+      b.addEventListener('click', () => { daily = false; load(i); });
       box.appendChild(b);
     });
   }
@@ -178,12 +181,18 @@
     else if (k === 'Backspace') { e.preventDefault(); undo(); }
     else if (k === 'Enter') {
       e.preventDefault();
-      if (won) { if (idx + 1 < levels.length) load(idx + 1); } else sendGhost(false);
+      if (won) { if (!daily && idx + 1 < levels.length) load(idx + 1); } else sendGhost(false);
     }
     else if (k === 'r') load(idx);
   });
   document.querySelectorAll('#pad button').forEach(b => b.addEventListener('click', () => step(b.dataset.k)));
   $('undo').addEventListener('click', undo);
   $('send').addEventListener('click', () => sendGhost(false));
+  $('daily').addEventListener('click', () => { daily = true; load(Daily.dailyIndex(new Date(), levels.length)); });
+  $('share').addEventListener('click', () => {
+    const text = Daily.shareText(new Date(), ghosts.length + 1, levels[idx].par, 'https://therealalexxx.github.io/loopmates/#daily');
+    (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(
+      () => say('Copied. ' + text.split('\n')[0], 'win'), () => say(text, 'win'));
+  });
   $('reset').addEventListener('click', () => load(idx));
 })();
