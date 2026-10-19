@@ -20,6 +20,6 @@ function shareText(date, loops, par, url) {
   return 'loopmates daily ' + d + ': out in ' + loops + (loops === 1 ? ' loop' : ' loops') + ' (' + tag + ')\n' + url;
 }
 
-const api = { dayNumber, dailyIndex, shareText };
-if (typeof module !== 'undefined') module.exports = api;
-else window.Daily = api;
+const dailyApi = { dayNumber, dailyIndex, shareText };
+if (typeof module !== 'undefined') module.exports = dailyApi;
+else window.Daily = dailyApi;
