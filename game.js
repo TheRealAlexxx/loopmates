@@ -13,8 +13,19 @@
   let moves = '';    // current loop
   let curPos = null, won = false, daily = false;
 
+  let custom = false;
   fetch('levels.json').then(r => r.json()).then(data => {
     levels = data;
+    if (location.hash.startsWith('#c=')) {
+      const r = Share.decodeLevel(location.hash.slice(3));
+      if (r.error) { levels = data; $('msg').textContent = 'Bad level link: ' + r.error + '. Showing level 1.'; location.hash = '#1'; }
+      else {
+        custom = true;
+        const lv = r.level;
+        try { lv.par = Sim.solve(Sim.parse(lv), 4, { maxNodes: 3000 }).loops; } catch (e) { /* too big to solve here */ }
+        levels = [lv];
+      }
+    }
     const saved = store.get();
     const h = location.hash === '#daily' ? Daily.dailyIndex(new Date(), levels.length) + 1 : parseInt(location.hash.slice(1), 10);
     daily = location.hash === '#daily';
@@ -28,8 +39,10 @@
     L = Sim.parse(levels[i]);
     ghosts = []; tracks = []; moves = ''; won = false;
     curPos = L.start.slice();
-    const s = store.get(); s.cur = i; store.set(s);
-    history.replaceState(null, '', daily ? '#daily' : '#' + (i + 1));
+    if (!custom) {
+      const s = store.get(); s.cur = i; store.set(s);
+      history.replaceState(null, '', daily ? '#daily' : '#' + (i + 1));
+    }
     buildBoard();
     say('');
     $('share').hidden = true;
@@ -135,13 +148,15 @@
     won = true;
     const loops = ghosts.length + 1;
     const par = levels[idx].par;
-    const s = store.get();
-    s.best = s.best || {};
-    if (!s.best[idx] || loops < s.best[idx]) s.best[idx] = loops;
-    store.set(s);
+    if (!custom) {
+      const s = store.get();
+      s.best = s.best || {};
+      if (!s.best[idx] || loops < s.best[idx]) s.best[idx] = loops;
+      store.set(s);
+    }
     let text = 'Out in ' + loops + (loops === 1 ? ' loop. ' : ' loops. ');
-    text += loops <= par ? 'Par.' : (loops - par) + ' over par (' + par + ').';
-    if (!daily && idx + 1 < levels.length) text += ' Next level: press enter.';
+    if (par) text += loops <= par ? 'Par.' : (loops - par) + ' over par (' + par + ').';
+    if (!custom && !daily && idx + 1 < levels.length) text += ' Next level: press enter.';
     say(text, 'win');
     $('share').hidden = !daily;
     render();
@@ -181,7 +196,7 @@
     else if (k === 'Backspace') { e.preventDefault(); undo(); }
     else if (k === 'Enter') {
       e.preventDefault();
-      if (won) { if (!daily && idx + 1 < levels.length) load(idx + 1); } else sendGhost(false);
+      if (won) { if (!custom && !daily && idx + 1 < levels.length) load(idx + 1); } else sendGhost(false);
     }
     else if (k === 'r') load(idx);
   });
