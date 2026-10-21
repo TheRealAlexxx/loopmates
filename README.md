@@ -4,6 +4,7 @@ A turn-based puzzle where you cooperate with your own past loops.
 
 **Play:** https://therealalexxx.github.io/loopmates/
 
+![loopmates](screenshot.png)
 You get a fixed number of ticks per loop. When a loop ends it replays as a
 ghost, at the same time as your next loop. Lowercase tiles are buttons, the
 matching capital tiles are doors. A door is open on a tick when a ghost stands
