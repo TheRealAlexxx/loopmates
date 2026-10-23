@@ -79,13 +79,13 @@
     $('landing').hidden = false;
   }
 
-  function load(i) {
+  function load(i, save) {
     idx = i;
     L = Sim.parse(levels[i]);
     ghosts = []; tracks = []; moves = ''; won = false;
     curPos = L.start.slice();
     if (!custom) {
-      const s = store.get(); s.cur = i; store.set(s);
+      if (save) { const s = store.get(); s.cur = i; store.set(s); }
       history.replaceState(null, '', daily ? '#daily' : '#' + (i + 1));
     }
     buildBoard();
@@ -209,12 +209,16 @@
     if (par) text += loops <= par ? 'Par. ' : (loops - par) + ' over par (' + par + '). ';
     if (tutorial) text += 'That is the whole game - your past loops are your teammates. The levels below are yours now.';
     else if (!custom && !daily && idx + 1 < levels.length) text += 'Next level: press enter.';
+    if (tutorial) {
+      tutorial = false; custom = false; $('tip').hidden = true;
+      levels = campaign; buildLevelList();
+      load(0);
+    }
     say(text, 'win');
     $('share').hidden = !daily;
     const rc = $('resultcard');
     if (daily) { rc.textContent = Daily.shareGrid(ghosts.concat([moves]), L.T); rc.hidden = false; }
     else rc.hidden = true;
-    if (tutorial) { tutorial = false; custom = false; $('tip').hidden = true; levels = campaign; idx = 0; buildLevelList(); }
     render();
     refreshLevelList();
   }
@@ -235,8 +239,10 @@
       b.textContent = i + 1;
       b.addEventListener('click', () => {
         daily = false;
-        if (!tutorial) { custom = false; if (levels !== campaign) levels = campaign, buildLevelList(); }
-        load(i);
+        if (tutorial) { load(i); return; }
+        custom = false;
+        if (levels !== campaign) { levels = campaign; buildLevelList(); }
+        load(i, true);
       });
       box.appendChild(b);
     });
@@ -256,7 +262,7 @@
     else if (k === 'Backspace') { e.preventDefault(); undo(); }
     else if (k === 'Enter') {
       e.preventDefault();
-      if (won) { if (!custom && !daily && idx + 1 < levels.length) load(idx + 1); } else sendGhost(false);
+      if (won) { if (!custom && !daily && idx + 1 < levels.length) load(idx + 1, true); } else sendGhost(false);
     }
     else if (k === 'r') load(idx);
   });

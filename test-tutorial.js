@@ -48,6 +48,8 @@ test('tutorial plays to a win with tips firing in order', async () => {
   const n = require('./levels.json').length;
   assert.strictEqual(w.document.querySelectorAll('#levels button').length, n, 'campaign levels restored after tutorial win');
   assert.strictEqual(w.document.getElementById('tip').hidden, true, 'tip hidden after tutorial ends');
+  assert.strictEqual(w.document.getElementById('lvl-name').textContent, require('./levels.json')[0].name + '  (par ' + (require('./levels.json')[0].par || '?') + ')', 'board/title show campaign level 1, not the tutorial');
+  assert.strictEqual(new URL(w.location.href).hash, '#1', 'hash consistent with the shown level');
 });
 
 test('closed door in loop 1 tells the truth', async () => {

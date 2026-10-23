@@ -57,3 +57,12 @@ node gen-levels.js <seed> <count>
 ## License
 
 MIT
+
+## Development
+
+Tests need Node 18+ and one install (jsdom, used to drive the real UI in a DOM):
+
+```sh
+npm ci
+node --test
+```
