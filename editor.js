@@ -28,6 +28,7 @@
     }
     if (dropped) {
       $('w').value = oldW; $('h').value = oldH;
+      clearTimeout(timer); // a pending solver pass must not overwrite the rejection
       const el = $('status');
       el.className = 'err';
       el.textContent = 'That size would cut off ' + dropped + ' painted tile' + (dropped === 1 ? '' : 's') + ' - clear the edges first or choose a larger size.';

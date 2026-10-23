@@ -166,3 +166,12 @@ test('out-of-range size inputs sync back to the clamped value', async () => {
   assert.strictEqual(w.document.getElementById('w').value, '12');
   assert.strictEqual(cells(w)[0].parentElement.children.length, 60, 'board clamped to 12 wide');
 });
+
+test('a pending solver pass cannot overwrite the rejection message (race)', async () => {
+  const w = boot();
+  pickTool(w, 'wall');
+  paint(w, 3, 2); // schedules the 200ms solver
+  setSize(w, 'h', 3); // destructive: rejected immediately, well within 200ms
+  await settle();
+  assert.match(w.document.getElementById('status').textContent, /would cut off/, 'rejection reason survives the pending solver timer');
+});
