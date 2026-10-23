@@ -16,33 +16,31 @@
     if (seed !== false) { g[1][1] = 'S'; g[h - 2][w - 2] = 'E'; }
   }
 
-  function countTile(t) {
-    let n = 0;
-    g.forEach((row) => row.forEach((c) => { if (c === t) n++; }));
-    return n;
-  }
-
-  function placeFirstFree(t) {
-    for (let y = 1; y < g.length - 1; y++) for (let x = 1; x < g[0].length - 1; x++) {
-      if (g[y][x] === '.') { g[y][x] = t; return; }
-    }
-    g[1][1] = t; // no floor left: take the first interior cell
-  }
-
   function resize() {
     const w = clamp($('w').value, 3, 12), h = clamp($('h').value, 3, 12);
+    const oldH = g.length, oldW = g[0].length;
+    // Reject a resize that would cut off painted tiles: silently dropping
+    // content (or silently moving S/E to keep the level valid) disguises a
+    // changed puzzle. Say no, revert the inputs, and explain.
+    let dropped = 0;
+    for (let y = 1; y < oldH - 1; y++) for (let x = 1; x < oldW - 1; x++) {
+      if (g[y][x] !== '.' && (x >= w - 1 || y >= h - 1)) dropped++;
+    }
+    if (dropped) {
+      $('w').value = oldW; $('h').value = oldH;
+      const el = $('status');
+      el.className = 'err';
+      el.textContent = 'That size would cut off ' + dropped + ' painted tile' + (dropped === 1 ? '' : 's') + ' - clear the edges first or choose a larger size.';
+      return;
+    }
     $('w').value = w; $('h').value = h; // keep the inputs in sync with the clamp
-    const old = g, oldH = old.length, oldW = old[0].length;
+    const old = g;
     blank(w, h, false);
-    // Copy old INTERIOR tiles only: the border is structural, and copying it
-    // into a wider grid made a stray wall column; copying over seeded S/E in a
-    // smaller grid silently removed the exit.
+    // Copy old INTERIOR tiles only: the border is structural, not content.
     for (let y = 1; y < h - 1 && y < oldH - 1; y++) for (let x = 1; x < w - 1 && x < oldW - 1; x++) {
       g[y][x] = old[y][x];
     }
     ensureUnique();
-    if (countTile('S') === 0) placeFirstFree('S');
-    if (countTile('E') === 0) placeFirstFree('E');
     draw();
   }
 

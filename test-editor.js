@@ -108,15 +108,36 @@ function setSize(w, id, value) {
   el.dispatchEvent(new w.Event('change', { bubbles: true }));
 }
 
-test('shrinking height 5 to 3 keeps exactly one S and one E', async () => {
+test('a shrink that would cut off painted tiles is rejected, board untouched', async () => {
   const w = boot();
   await settle();
-  setSize(w, 'h', 3);
-  assert.strictEqual(cells(w).length, 21, '7x3 grid');
-  assert.strictEqual(cells(w).filter((c) => c.classList.contains('exit')).length, 1, 'exit survives the shrink');
-  assert.strictEqual(cells(w).filter((c) => c.classList.contains('start')).length, 1, 'start survives the shrink');
-  await settle();
-  assert.ok(!/need exactly one/.test(w.document.getElementById('status').textContent), 'level stays valid');
+  setSize(w, 'h', 3); // default E at (3,5) falls outside a 3-row grid
+  assert.strictEqual(cells(w).length, 35, 'board unchanged after rejection');
+  assert.match(w.document.getElementById('status').textContent, /would cut off \d+ painted tile/, 'truthful rejection message');
+  assert.strictEqual(w.document.getElementById('h').value, '5', 'input reverted to the real size');
+});
+
+test('a shrink where every painted tile fits is allowed and preserves content', async () => {
+  const w = boot();
+  pickTool(w, 'E');
+  paint(w, 2, 2); // move E inside the future bounds
+  pickTool(w, 'a');
+  paint(w, 3, 1);
+  setSize(w, 'w', 5);
+  setSize(w, 'h', 4);
+  assert.strictEqual(cells(w).length, 20, '5x4 grid');
+  assert.strictEqual(cells(w).filter((c) => c.classList.contains('exit')).length, 1);
+  assert.ok(cellAt(w, 2, 2).classList.contains('exit'), 'E kept its painted cell');
+  assert.ok(cellAt(w, 3, 1).classList.contains('button'), 'button kept its painted cell');
+  assert.strictEqual(cells(w).filter((c) => c.classList.contains('start')).length, 1);
+});
+
+test('degenerate 3x3 resize is rejected rather than destroying the puzzle', async () => {
+  const w = boot();
+  setSize(w, 'w', 1); // clamps to 3
+  assert.strictEqual(w.document.getElementById('w').value, '5'.replace('5', '7'), 'rejected input reverts to 7');
+  assert.strictEqual(cells(w).length, 35, 'board unchanged');
+  assert.match(w.document.getElementById('status').textContent, /would cut off/);
 });
 
 test('widening 7 to 12 does not copy the old border as an interior wall column', async () => {
