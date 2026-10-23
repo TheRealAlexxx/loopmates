@@ -101,3 +101,47 @@ test('resize keeps the interior and reclamps; clear resets', async () => {
   assert.ok(!cells(w).some((c) => c.classList.contains('button')), 'clear wipes paint');
   assert.strictEqual(cells(w).filter((c) => c.classList.contains('start')).length, 1);
 });
+
+function setSize(w, id, value) {
+  const el = w.document.getElementById(id);
+  el.value = String(value);
+  el.dispatchEvent(new w.Event('change', { bubbles: true }));
+}
+
+test('shrinking height 5 to 3 keeps exactly one S and one E', async () => {
+  const w = boot();
+  await settle();
+  setSize(w, 'h', 3);
+  assert.strictEqual(cells(w).length, 21, '7x3 grid');
+  assert.strictEqual(cells(w).filter((c) => c.classList.contains('exit')).length, 1, 'exit survives the shrink');
+  assert.strictEqual(cells(w).filter((c) => c.classList.contains('start')).length, 1, 'start survives the shrink');
+  await settle();
+  assert.ok(!/need exactly one/.test(w.document.getElementById('status').textContent), 'level stays valid');
+});
+
+test('widening 7 to 12 does not copy the old border as an interior wall column', async () => {
+  const w = boot();
+  setSize(w, 'w', 12);
+  assert.strictEqual(cells(w).length, 60, '12x5 grid');
+  for (let y = 1; y <= 3; y++) {
+    assert.ok(!cellAt(w, 6, y).classList.contains('wall'), 'old border column 6 row ' + y + ' is interior floor, not a copied wall');
+    assert.ok(!cellAt(w, 10, y).classList.contains('wall'), 'new interior column 10 row ' + y + ' is floor');
+  }
+  assert.ok(cellAt(w, 11, 2).classList.contains('wall'), 'new border is wall');
+});
+
+test('a moved S survives resize at its painted position', async () => {
+  const w = boot();
+  pickTool(w, 'S');
+  paint(w, 3, 2);
+  setSize(w, 'w', 9);
+  assert.strictEqual(cells(w).filter((c) => c.classList.contains('start')).length, 1);
+  assert.ok(cellAt(w, 3, 2).classList.contains('start'), 'S kept its painted cell');
+});
+
+test('out-of-range size inputs sync back to the clamped value', async () => {
+  const w = boot();
+  setSize(w, 'w', 99);
+  assert.strictEqual(w.document.getElementById('w').value, '12');
+  assert.strictEqual(cells(w)[0].parentElement.children.length, 60, 'board clamped to 12 wide');
+});
