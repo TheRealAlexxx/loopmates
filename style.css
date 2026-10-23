@@ -39,3 +39,5 @@ details { margin-top:1.2rem; color:var(--dim); } summary { cursor:pointer; color
 footer { margin-top:2rem; color:var(--dim); font-size:.85rem; } footer a { color:var(--acc); }
 @keyframes shake { 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
 .shake { animation:shake .15s; }
+
+#tip { max-width:520px; margin:10px auto; background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--acc); border-radius:8px; padding:12px 14px; font-size:.92rem; line-height:1.5; }

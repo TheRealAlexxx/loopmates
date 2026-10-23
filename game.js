@@ -14,6 +14,23 @@
   let curPos = null, won = false, daily = false;
 
   let custom = false;
+  let tutorial = false, tipStage = 0;
+  const TUTORIAL = { name: 'First loop', T: 9, grid: ['#########', '#S...aAE#', '#########'] };
+  const TUTORIAL_BTN = [5, 1];
+  const TIPS = [
+    'You get 9 ticks per loop. Every move or wait spends one. When the loop ends, it replays as a ghost. Walk to button a and wait there until the loop runs out.',
+    'Meet your loopmate - it replays exactly what you recorded, so it stands on a for you. Now walk right, through door A, to E.',
+    'See it? A is open only while your ghost stands on a. You cannot hold a door for yourself - that is the whole puzzle.',
+  ];
+  function showTip() { const t = $('tip'); t.hidden = false; t.textContent = TIPS[Math.min(tipStage, TIPS.length - 1)]; }
+  function startTutorial() {
+    tutorial = true; custom = true; daily = false; tipStage = 0;
+    const lv = { name: TUTORIAL.name, T: TUTORIAL.T, grid: TUTORIAL.grid.slice() };
+    try { lv.par = Sim.solve(Sim.parse(lv), 4, { maxNodes: 3000 }).loops; } catch (e) { /* keep unknown */ }
+    levels = [lv];
+    buildLevelList();
+    load(0);
+  }
   fetch('levels.json').then(r => r.json()).then(data => {
     levels = data;
     let linkMsg = null, forceIdx = null;
@@ -53,6 +70,7 @@
     }
     buildBoard();
     say('');
+    if (tutorial) { tipStage = 0; showTip(); } else { $('tip').hidden = true; }
     $('share').hidden = true;
     render();
     refreshLevelList();
@@ -135,6 +153,9 @@
     moves += m;
     curPos = [nx, ny];
     say('');
+    if (tutorial && tipStage === 1 && tracks.some(tr => tr[moves.length] && tr[moves.length][0] === TUTORIAL_BTN[0] && tr[moves.length][1] === TUTORIAL_BTN[1])) {
+      tipStage = 2; showTip();
+    }
     if (nx === L.exit[0] && ny === L.exit[1]) return win();
     if (moves.length >= L.T) { sendGhost(true); return; }
     render();
@@ -149,6 +170,7 @@
     moves = '';
     curPos = L.start.slice();
     say(auto ? 'Time is up. That loop is now a ghost.' : 'Ghost sent. Loop ' + (ghosts.length + 1) + ' starts.');
+    if (tutorial && tipStage === 0) { tipStage = 1; showTip(); }
     render();
   }
 
@@ -163,8 +185,9 @@
       store.set(s);
     }
     let text = 'Out in ' + loops + (loops === 1 ? ' loop. ' : ' loops. ');
-    if (par) text += loops <= par ? 'Par.' : (loops - par) + ' over par (' + par + ').';
-    if (!custom && !daily && idx + 1 < levels.length) text += ' Next level: press enter.';
+    if (par) text += loops <= par ? 'Par. ' : (loops - par) + ' over par (' + par + '). ';
+    if (tutorial) text += 'That is the whole game - your past loops are your teammates. The levels below are yours now.';
+    else if (!custom && !daily && idx + 1 < levels.length) text += 'Next level: press enter.';
     say(text, 'win');
     $('share').hidden = !daily;
     render();
@@ -185,7 +208,7 @@
     levels.forEach((lv, i) => {
       const b = document.createElement('button');
       b.textContent = i + 1;
-      b.addEventListener('click', () => { daily = false; load(i); });
+      b.addEventListener('click', () => { daily = false; tutorial = false; custom = false; load(i); });
       box.appendChild(b);
     });
   }
@@ -209,9 +232,10 @@
     else if (k === 'r') load(idx);
   });
   document.querySelectorAll('#pad button').forEach(b => b.addEventListener('click', () => step(b.dataset.k)));
+  $('howto').addEventListener('click', startTutorial);
   $('undo').addEventListener('click', undo);
   $('send').addEventListener('click', () => sendGhost(false));
-  $('daily').addEventListener('click', () => { daily = true; load(Daily.dailyIndex(new Date(), levels.length)); });
+  $('daily').addEventListener('click', () => { tutorial = false; custom = false; daily = true; load(Daily.dailyIndex(new Date(), levels.length)); });
   $('share').addEventListener('click', () => {
     const text = Daily.shareText(new Date(), ghosts.length + 1, levels[idx].par, 'https://therealalexxx.github.io/loopmates/#daily');
     (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(
