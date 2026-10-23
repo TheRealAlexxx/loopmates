@@ -28,7 +28,8 @@ test('valid #c= link shows the landing card, then plays', async () => {
   assert.strictEqual(landing.hidden, false, 'landing shown before play');
   assert.match(w.document.getElementById('landing-meta').textContent, /par \d+ loop/);
   assert.ok(w.document.querySelectorAll('#landing-thumb span').length > 0, 'thumbnail rendered');
-  assert.match(landing.textContent, /nothing is stored/, 'truthful storage note');
+  assert.match(landing.textContent, /never uploaded/, 'bounded truthful storage note');
+  assert.ok(!/nothing is stored anywhere/.test(landing.textContent), 'no overbroad claim while progress uses localStorage');
   w.document.getElementById('landing-play').click();
   assert.strictEqual(landing.hidden, true, 'play hides the landing');
   assert.ok(w.document.querySelectorAll('#board .c').length > 0, 'board rendered');

@@ -20,6 +20,21 @@ function shareText(date, loops, par, url) {
   return 'loopmates daily ' + d + ': out in ' + loops + (loops === 1 ? ' loop' : ' loops') + ' (' + tag + ')\n' + url;
 }
 
-const dailyApi = { dayNumber, dailyIndex, shareText };
+// One emoji row per loop, one square per tick: yellow = the live player moved
+// or waited out that tick, green = reached E, white = waiting. Past loops are
+// the recorded move strings; the final loop is the winning one.
+function shareGrid(loopMoves, T) {
+  return loopMoves.map((ms, i) => {
+    const last = i === loopMoves.length - 1;
+    let row = '';
+    for (let t = 0; t < T; t++) {
+      const m = ms[t] || 'W';
+      row += last && m !== 'W' && t === ms.length - 1 ? '\u{1F7E9}' : m === 'W' ? '\u2B1C' : '\u{1F7E8}';
+    }
+    return row;
+  }).join('\n');
+}
+
+const dailyApi = { dayNumber, dailyIndex, shareText, shareGrid };
 if (typeof module !== 'undefined') module.exports = dailyApi;
 else window.Daily = dailyApi;

@@ -22,3 +22,12 @@ test('share text', () => {
   assert.strictEqual(D.shareText(d, 2, 2, 'u'), 'loopmates daily 2026-10-19: out in 2 loops (par)\nu');
   assert.strictEqual(D.shareText(d, 4, 2, 'u'), 'loopmates daily 2026-10-19: out in 4 loops (+2)\nu');
 });
+
+test('shareGrid renders one emoji row per loop', () => {
+  const grid = D.shareGrid(['RRRRWWWWW', 'RRRRRR'], 9).split('\n');
+  assert.strictEqual(grid.length, 2);
+  assert.strictEqual([...grid[0]].length, 9);
+  assert.strictEqual([...grid[0]].filter(c => c === '\u{1F7E8}').length, 4, 'loop 1: 4 move ticks');
+  assert.strictEqual([...grid[1]][5], '\u{1F7E9}', 'final tick of the winning loop is green');
+  assert.strictEqual([...grid[1]][8], '\u2B1C', 'unused winning-loop ticks are waits');
+});

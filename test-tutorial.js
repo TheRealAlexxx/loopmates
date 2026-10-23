@@ -45,6 +45,9 @@ test('tutorial plays to a win with tips firing in order', async () => {
   keys(w, ['ArrowRight', 'ArrowRight']);
   assert.match(msg.textContent, /Out in 2 loops/, 'won in 2 loops');
   assert.match(msg.textContent, /That is the whole game/, 'tutorial win copy');
+  const n = require('./levels.json').length;
+  assert.strictEqual(w.document.querySelectorAll('#levels button').length, n, 'campaign levels restored after tutorial win');
+  assert.strictEqual(w.document.getElementById('tip').hidden, true, 'tip hidden after tutorial ends');
 });
 
 test('closed door in loop 1 tells the truth', async () => {
@@ -54,10 +57,24 @@ test('closed door in loop 1 tells the truth', async () => {
   assert.match(w.document.getElementById('msg').textContent, /door is closed/i);
 });
 
-test('leaving the tutorial via the level list hides the tip card', async () => {
+test('leaving the tutorial via the daily button restores the campaign and hides the tip', async () => {
   const w = await boot('');
   w.document.getElementById('howto').click();
   assert.strictEqual(w.document.getElementById('tip').hidden, false);
-  w.document.querySelector('#levels button').click();
+  assert.strictEqual(w.document.querySelectorAll('#levels button').length, 1, 'tutorial list is just the teaching level');
+  w.document.getElementById('daily').click();
   assert.strictEqual(w.document.getElementById('tip').hidden, true);
+  const n = require('./levels.json').length;
+  assert.strictEqual(w.document.querySelectorAll('#levels button').length, n, 'campaign levels restored');
+  assert.match(w.document.getElementById('lvl-name').textContent, /par/, 'a real daily level loaded, not the tutorial');
+});
+
+test('clicking the tutorial entry in the level list restarts the tutorial', async () => {
+  const w = await boot('');
+  w.document.getElementById('howto').click();
+  keys(w, ['ArrowRight']);
+  w.document.querySelector('#levels button').click();
+  assert.strictEqual(w.document.getElementById('tip').hidden, false, 'still in tutorial');
+  assert.match(w.document.getElementById('lvl-name').textContent, /First loop/);
+  assert.match(w.document.getElementById('tick-info').textContent, /tick 0\/9/, 'restarted at tick 0');
 });

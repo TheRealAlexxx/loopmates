@@ -7,7 +7,7 @@
     set(v) { try { localStorage.setItem('loopmates', JSON.stringify(v)); } catch (e) { /* private mode */ } },
   };
 
-  let levels = [], idx = 0, L = null;
+  let levels = [], campaign = [], idx = 0, L = null;
   let ghosts = [];   // recorded move strings
   let tracks = [];   // their position tracks
   let moves = '';    // current loop
@@ -33,6 +33,7 @@
   }
   fetch('levels.json').then(r => r.json()).then(data => {
     levels = data;
+    campaign = data;
     let linkMsg = null, forceIdx = null, landingLevel = null;
     const sel = Share.parseLevelHash(location.hash, levels.length);
     if (sel.kind === 'custom') {
@@ -91,6 +92,7 @@
     say('');
     if (tutorial) { tipStage = 0; showTip(); } else { $('tip').hidden = true; }
     $('share').hidden = true;
+    $('resultcard').hidden = true;
     render();
     refreshLevelList();
   }
@@ -209,6 +211,10 @@
     else if (!custom && !daily && idx + 1 < levels.length) text += 'Next level: press enter.';
     say(text, 'win');
     $('share').hidden = !daily;
+    const rc = $('resultcard');
+    if (daily) { rc.textContent = Daily.shareGrid(ghosts.concat([moves]), L.T); rc.hidden = false; }
+    else rc.hidden = true;
+    if (tutorial) { tutorial = false; custom = false; $('tip').hidden = true; levels = campaign; idx = 0; buildLevelList(); }
     render();
     refreshLevelList();
   }
@@ -227,7 +233,11 @@
     levels.forEach((lv, i) => {
       const b = document.createElement('button');
       b.textContent = i + 1;
-      b.addEventListener('click', () => { daily = false; tutorial = false; custom = false; load(i); });
+      b.addEventListener('click', () => {
+        daily = false;
+        if (!tutorial) { custom = false; if (levels !== campaign) levels = campaign, buildLevelList(); }
+        load(i);
+      });
       box.appendChild(b);
     });
   }
@@ -255,9 +265,14 @@
   $('landing-play').addEventListener('click', () => { $('landing').hidden = true; load(0); });
   $('undo').addEventListener('click', undo);
   $('send').addEventListener('click', () => sendGhost(false));
-  $('daily').addEventListener('click', () => { tutorial = false; custom = false; daily = true; load(Daily.dailyIndex(new Date(), levels.length)); });
+  $('daily').addEventListener('click', () => {
+    tutorial = false; custom = false; daily = true;
+    if (levels !== campaign) { levels = campaign; buildLevelList(); }
+    load(Daily.dailyIndex(new Date(), levels.length));
+  });
   $('share').addEventListener('click', () => {
-    const text = Daily.shareText(new Date(), ghosts.length + 1, levels[idx].par, 'https://therealalexxx.github.io/loopmates/#daily');
+    const text = Daily.shareText(new Date(), ghosts.length + 1, levels[idx].par, 'https://therealalexxx.github.io/loopmates/#daily')
+      + '\n' + Daily.shareGrid(ghosts.concat([moves]), L.T);
     (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(
       () => say('Copied. ' + text.split('\n')[0], 'win'), () => say(text, 'win'));
   });
