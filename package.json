@@ -1,0 +1,7 @@
+{
+  "name": "loopmates",
+  "private": true,
+  "description": "A time-loop puzzle game. Static site; deps are only for tests.",
+  "scripts": { "test": "node --test" },
+  "devDependencies": { "jsdom": "^24.0.0" }
+}

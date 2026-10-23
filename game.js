@@ -16,9 +16,11 @@
   let custom = false;
   fetch('levels.json').then(r => r.json()).then(data => {
     levels = data;
-    if (location.hash.startsWith('#c=')) {
-      const r = Share.decodeLevel(location.hash.slice(3));
-      if (r.error) { levels = data; $('msg').textContent = 'Bad level link: ' + r.error + '. Showing level 1.'; location.hash = '#1'; }
+    let linkMsg = null, forceIdx = null;
+    const sel = Share.parseLevelHash(location.hash, levels.length);
+    if (sel.kind === 'custom') {
+      const r = Share.decodeLevel(sel.code);
+      if (r.error) { linkMsg = 'Bad level link: ' + r.error + '. Showing level 1.'; location.hash = '#1'; forceIdx = 0; }
       else {
         custom = true;
         const lv = r.level;
@@ -27,11 +29,17 @@
       }
     }
     const saved = store.get();
-    const h = location.hash === '#daily' ? Daily.dailyIndex(new Date(), levels.length) + 1 : parseInt(location.hash.slice(1), 10);
-    daily = location.hash === '#daily';
-    idx = h > 0 && h <= levels.length ? h - 1 : Math.min(saved.cur || 0, levels.length - 1);
+    daily = sel.kind === 'daily';
+    if (sel.kind === 'daily') idx = Daily.dailyIndex(new Date(), levels.length);
+    else if (sel.kind === 'level') idx = sel.index;
+    else if (forceIdx !== null) idx = forceIdx;
+    else {
+      idx = Math.min(saved.cur || 0, levels.length - 1);
+      if (sel.kind === 'unknown' && !linkMsg) linkMsg = 'No level "' + sel.raw + '". Showing level ' + (idx + 1) + '.';
+    }
     buildLevelList();
     load(idx);
+    if (linkMsg) say(linkMsg, 'bad');
   });
 
   function load(i) {

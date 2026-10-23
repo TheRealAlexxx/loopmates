@@ -54,3 +54,21 @@ function decodeLevel(code) {
 const shareApi = { encodeLevel, decodeLevel, validateLevel };
 if (typeof module !== 'undefined') module.exports = shareApi;
 else window.Share = shareApi;
+
+// Classify the URL hash that selects what to load.
+// Returns one of:
+//   { kind: 'empty' }                    - no hash, use saved position
+//   { kind: 'daily' }                    - #daily
+//   { kind: 'level', index }             - #N, 1-based, in range
+//   { kind: 'custom', code }             - #c=<code>
+//   { kind: 'unknown', raw }             - anything else (bad level no., junk)
+function parseLevelHash(hash, levelCount) {
+  const h = (hash || '').replace(/^#/, '');
+  if (h === '') return { kind: 'empty' };
+  if (h === 'daily') return { kind: 'daily' };
+  if (h.startsWith('c=')) return { kind: 'custom', code: h.slice(2) };
+  const n = parseInt(h, 10);
+  if (Number.isInteger(n) && String(n) === h && n >= 1 && n <= levelCount) return { kind: 'level', index: n - 1 };
+  return { kind: 'unknown', raw: h };
+}
+shareApi.parseLevelHash = parseLevelHash;
