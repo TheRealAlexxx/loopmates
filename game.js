@@ -33,7 +33,7 @@
   }
   fetch('levels.json').then(r => r.json()).then(data => {
     levels = data;
-    let linkMsg = null, forceIdx = null;
+    let linkMsg = null, forceIdx = null, landingLevel = null;
     const sel = Share.parseLevelHash(location.hash, levels.length);
     if (sel.kind === 'custom') {
       const r = Share.decodeLevel(sel.code);
@@ -43,6 +43,7 @@
         const lv = r.level;
         try { lv.par = Sim.solve(Sim.parse(lv), 4, { maxNodes: 3000 }).loops; } catch (e) { /* too big to solve here */ }
         levels = [lv];
+        landingLevel = lv;
       }
     }
     const saved = store.get();
@@ -55,9 +56,27 @@
       if (sel.kind === 'unknown' && !linkMsg) linkMsg = 'No level "' + sel.raw + '". Showing level ' + (idx + 1) + '.';
     }
     buildLevelList();
-    load(idx);
-    if (linkMsg) say(linkMsg, 'bad');
+    if (landingLevel) showLanding(landingLevel);
+    else {
+      load(idx);
+      if (linkMsg) say(linkMsg, 'bad');
+    }
   });
+
+  function showLanding(lv) {
+    const L = Sim.parse(lv);
+    $('landing-meta').textContent = lv.name + (lv.par ? ' - par ' + lv.par + (lv.par === 1 ? ' loop' : ' loops') : '');
+    const th = $('landing-thumb');
+    th.innerHTML = '';
+    th.style.gridTemplateColumns = 'repeat(' + L.w + ', 16px)';
+    for (let y = 0; y < L.h; y++) for (let x = 0; x < L.w; x++) {
+      const s = document.createElement('span');
+      const c = Sim.cellAt(L, x, y);
+      s.className = c === '#' ? 'w' : c === 'S' ? 's' : c === 'E' ? 'e' : (c >= 'a' && c <= 'c') ? 'b' : (c >= 'A' && c <= 'C') ? 'd' : '';
+      th.appendChild(s);
+    }
+    $('landing').hidden = false;
+  }
 
   function load(i) {
     idx = i;
@@ -233,6 +252,7 @@
   });
   document.querySelectorAll('#pad button').forEach(b => b.addEventListener('click', () => step(b.dataset.k)));
   $('howto').addEventListener('click', startTutorial);
+  $('landing-play').addEventListener('click', () => { $('landing').hidden = true; load(0); });
   $('undo').addEventListener('click', undo);
   $('send').addEventListener('click', () => sendGhost(false));
   $('daily').addEventListener('click', () => { tutorial = false; custom = false; daily = true; load(Daily.dailyIndex(new Date(), levels.length)); });

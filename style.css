@@ -41,3 +41,20 @@ footer { margin-top:2rem; color:var(--dim); font-size:.85rem; } footer a { color
 .shake { animation:shake .15s; }
 
 #tip { max-width:520px; margin:10px auto; background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--acc); border-radius:8px; padding:12px 14px; font-size:.92rem; line-height:1.5; }
+
+#landing { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:18px; z-index:10; }
+.landing-card { max-width:460px; background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:22px; text-align:center; }
+.landing-card h2 { margin:0 0 14px; font-size:1.25rem; color:var(--acc); }
+#landing-thumb { display:grid; gap:1px; justify-content:center; margin:0 auto 12px; }
+#landing-thumb span { width:16px; height:16px; border-radius:3px; background:var(--floor); }
+#landing-thumb span.w { background:var(--wall); }
+#landing-thumb span.s { background:var(--acc); }
+#landing-thumb span.e { background:var(--good); }
+#landing-thumb span.b { background:var(--warn); border-radius:50%; }
+#landing-thumb span.d { background:transparent; border:2px solid var(--warn); box-sizing:border-box; }
+#landing-meta { color:var(--text); margin:0 0 8px; }
+.landing-expl { color:var(--dim); font-size:.92rem; }
+.landing-card .row { display:flex; gap:10px; justify-content:center; align-items:center; margin:14px 0 8px; }
+.landing-editor { color:var(--acc); }
+.landing-note { color:var(--dim); font-size:.8rem; margin:0; }
+#landing[hidden] { display:none; }
